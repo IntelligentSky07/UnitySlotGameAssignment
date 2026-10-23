@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e4f72326e7bc4047922ed071f19e545, type: 3}
+  m_Name: Symbol_Cherry
+  m_EditorClassIdentifier: 
+  symbolName: Cherry
+  sprite: {fileID: 21300000, guid: 70416a0b0a8f57f408b114170885851e, type: 3}
+  payoutMultiplier: 4
+  weight: 50
+  isWild: 0
