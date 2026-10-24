@@ -3,7 +3,8 @@ using UnityEngine;
 namespace SlotGame.Core
 {
     /// <summary>
-    /// A scriptable object that contains the data for a symbol in the slot machine.
+    /// One symbol that can land on a reel (Cherry, BAR, Wild, and so on).
+    /// Weight controls how often it appears; payoutMultiplier is how many times the bet it pays on a full line.
     /// </summary>
     [CreateAssetMenu(fileName = "Symbol_", menuName = "SlotGame/Symbol Data")]
     public class SymbolData : ScriptableObject
@@ -11,13 +12,13 @@ namespace SlotGame.Core
         [SerializeField] private string symbolName;
         [SerializeField] private Sprite sprite;
 
-        [Tooltip("Win amount = bet x this multiplier when a full line of this symbol lands.")]
+        [Tooltip("Credits paid = current bet × this value when this symbol fills the payline.")]
         [SerializeField, Min(1)] private int payoutMultiplier = 5;
 
-        [Tooltip("Relative chance of appearing. Higher = more common. Rare symbols pay more.")]
+        [Tooltip("How often this symbol is rolled. Higher weight = more common on the reels.")]
         [SerializeField, Min(0)] private int weight = 10;
 
-        [Tooltip("Bonus feature: a wild substitutes for any other symbol on the payline.")]
+        [Tooltip("Wilds count as a match for any other symbol on the payline.")]
         [SerializeField] private bool isWild;
 
         public string SymbolName => symbolName;

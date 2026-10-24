@@ -2,7 +2,9 @@ using System.Collections.Generic;
 
 namespace SlotGame.Core
 {
-    /// <summary>Outcome of evaluating the payline.</summary>
+    /// <summary>
+    /// Result shown after the reels stop: whether the middle payline won, which symbol paid, and how many credits.
+    /// </summary>
     public readonly struct WinResult
     {
         public bool IsWin { get; }
@@ -20,8 +22,9 @@ namespace SlotGame.Core
     }
 
     /// <summary>
-    /// Pure logic (no Unity dependencies) that decides if a payline wins and how much.
-    /// Rule: every symbol on the line must match. Wild symbols match anything.
+    /// Checks the payline after a spin.
+    /// A win needs every reel on the line to show the same symbol; wilds fill in for whatever that symbol is.
+    /// Payout is that symbol's multiplier times the bet that was locked in for the spin.
     /// </summary>
     public class PayoutEvaluator
     {
@@ -30,7 +33,7 @@ namespace SlotGame.Core
             if (payline == null || payline.Count == 0)
                 return WinResult.None;
 
-            // Find the first non-wild symbol; every other non-wild must equal it.
+            // Ignore wilds while finding the symbol the line has to match.
             SymbolData target = null;
 
             foreach (SymbolData symbol in payline)
@@ -44,7 +47,7 @@ namespace SlotGame.Core
                     return WinResult.None;
             }
 
-            // A line made entirely of wilds pays as the wild symbol itself.
+            // All wilds still counts as a win and pays using the wild's own multiplier.
             if (target == null)
                 target = payline[0];
 

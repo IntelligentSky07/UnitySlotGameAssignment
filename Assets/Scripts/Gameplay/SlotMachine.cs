@@ -8,12 +8,10 @@ using SlotGame.Reels;
 namespace SlotGame.Gameplay
 {
     /// <summary>
-    /// Game controller. Flow of one spin:
-    ///   1. Charge the bet.
-    ///   2. Decide the outcome with the RNG (before any animation).
-    ///   3. Spin all reels, then stop them one by one onto the pre-decided symbols.
-    ///   4. Evaluate the payline and pay out.
-    /// Deciding first keeps the game fair and testable: visuals just reveal the result.
+    /// Runs a spin on the cabinet:
+    /// take the bet, roll every visible cell, spin the reels, stop them left to right on those cells,
+    /// then score the middle row and pay if it matches.
+    /// The pictures on the reels always show this pre-rolled grid; they do not pick the win themselves.
     /// </summary>
     public class SlotMachine : MonoBehaviour
     {
@@ -26,9 +24,9 @@ namespace SlotGame.Gameplay
         [SerializeField] private int[] betOptions = { 10, 20, 50, 100 };
 
         [Header("Timing")]
-        [Tooltip("Seconds all reels spin before the first one starts stopping. Keep above Reel acceleration time.")]
+        [Tooltip("How long every reel keeps spinning before the leftmost one begins to stop.")]
         [SerializeField] private float minSpinTime = 1f;
-        [Tooltip("Delay between each reel stopping (left to right).")]
+        [Tooltip("Pause between each reel locking, left to right.")]
         [SerializeField] private float stopDelayBetweenReels = 0.4f;
 
         private WeightedSymbolPicker picker;
@@ -56,19 +54,23 @@ namespace SlotGame.Gameplay
                 reel.Initialize(picker);
         }
 
-        /// <summary>Called by the Spin button.</summary>
+        /// <summary>
+        /// Spin button. Does nothing if a spin is already playing or the player cannot cover the bet.
+        /// </summary>
         public void TrySpin()
         {
             if (IsSpinning)
                 return;
 
             if (!Wallet.TrySpend(CurrentBet))
-                return; // Not enough credits.
+                return;
 
             StartCoroutine(SpinRoutine(CurrentBet));
         }
 
-        /// <summary>Pass +1 / -1 from the bet buttons.</summary>
+        /// <summary>
+        /// Steps through betOptions. +1 is the next higher stake, -1 the next lower.
+        /// </summary>
         public void ChangeBet(int direction)
         {
             if (IsSpinning)
@@ -83,16 +85,15 @@ namespace SlotGame.Gameplay
             IsSpinning = true;
             SpinStarted?.Invoke();
 
-            // 1. Decide the full outcome up front.
+            // Roll the full 3-row grid before anything moves, then reveal it on the reels.
             SymbolData[][] outcome = GenerateOutcome();
 
-            // 2. Start every reel spinning.
             foreach (Reel reel in reels)
                 reel.BeginSpin();
 
             yield return new WaitForSeconds(minSpinTime);
 
-            // 3. Stop reels left to right, staggered, then wait for all to settle.
+            // Lock reels one at a time so the player can watch each column settle.
             List<Coroutine> stopRoutines = new List<Coroutine>();
             for (int i = 0; i < reels.Count; i++)
             {
@@ -103,7 +104,7 @@ namespace SlotGame.Gameplay
             foreach (Coroutine routine in stopRoutines)
                 yield return routine;
 
-            // 4. Read the payline (middle row) and pay out.
+            // Middle row across the reels is the payline.
             WinResult result = evaluator.Evaluate(GetPayline(outcome), bet);
             if (result.IsWin)
                 Wallet.Add(result.Payout);
@@ -112,7 +113,9 @@ namespace SlotGame.Gameplay
             SpinCompleted?.Invoke(result);
         }
 
-        /// <summary>Rolls a symbol for every visible cell: outcome[reel][row].</summary>
+        /// <summary>
+        /// Picks a symbol for every visible cell. outcome[reel][row] is what that reel will show, top to bottom.
+        /// </summary>
         private SymbolData[][] GenerateOutcome()
         {
             SymbolData[][] outcome = new SymbolData[reels.Count][];
@@ -127,7 +130,9 @@ namespace SlotGame.Gameplay
             return outcome;
         }
 
-        /// <summary>The payline is the middle row across all reels.</summary>
+        /// <summary>
+        /// Reads the centre row of each reel — that is the only line that pays in this game.
+        /// </summary>
         private List<SymbolData> GetPayline(SymbolData[][] outcome)
         {
             int middleRow = reels[0].VisibleRows / 2;

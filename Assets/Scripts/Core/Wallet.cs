@@ -2,7 +2,9 @@ using System;
 
 namespace SlotGame.Core
 {
-    /// <summary>Holds the player's credits and notifies listeners when they change.</summary>
+    /// <summary>
+    /// Player credit meter. Spinning spends from here; a winning payline adds credits back.
+    /// </summary>
     public class Wallet
     {
         public event Action<int> BalanceChanged;
@@ -14,7 +16,9 @@ namespace SlotGame.Core
             Balance = startingBalance;
         }
 
-        /// <summary>Deducts credits if the player can afford it.</summary>
+        /// <summary>
+        /// Takes the bet off the balance. Returns false if the player does not have enough credits.
+        /// </summary>
         public bool TrySpend(int amount)
         {
             if (amount <= 0 || amount > Balance)

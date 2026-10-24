@@ -4,8 +4,9 @@ using System.Collections.Generic;
 namespace SlotGame.Core
 {
     /// <summary>
-    /// Picks symbols randomly, respecting each symbol's weight.
-    /// Example: weights 10/10/2 => the third symbol shows up 2 out of 22 times.
+    /// Rolls which symbol lands on a reel cell.
+    /// Each SymbolData.Weight is a slice of the total: a symbol with weight 2 in a pool of 22
+    /// shows up about 2/22 of the time, so rares stay rare and still pay more.
     /// </summary>
     public class WeightedSymbolPicker
     {
@@ -27,8 +28,7 @@ namespace SlotGame.Core
 
         public SymbolData Pick()
         {
-            // Roll a number across the total weight, then walk the list subtracting
-            // weights until we find the bucket the roll fell into.
+            // Walk the symbol list like a weighted wheel: subtract each weight until the roll lands in a slice.
             int roll = random.Range(0, totalWeight);
 
             foreach (SymbolData symbol in symbols)
@@ -38,7 +38,7 @@ namespace SlotGame.Core
                 roll -= symbol.Weight;
             }
 
-            return symbols[symbols.Count - 1]; // Unreachable, keeps the compiler happy.
+            return symbols[symbols.Count - 1];
         }
     }
 }

@@ -7,8 +7,8 @@ using SlotGame.Gameplay;
 namespace SlotGame.UI
 {
     /// <summary>
-    /// Connects buttons and text to the SlotMachine. Contains no game logic:
-    /// it only listens to events and shows state.
+    /// HUD for the slot cabinet: Spin / bet buttons, credit display, and the win / lose message.
+    /// Buttons stay locked while the reels are moving or the player cannot cover the current bet.
     /// </summary>
     public class SlotUI : MonoBehaviour
     {
@@ -24,7 +24,7 @@ namespace SlotGame.UI
         [SerializeField] private TMP_Text betText;
         [SerializeField] private TMP_Text messageText;
 
-        // Start (not Awake) so SlotMachine.Awake has already created the Wallet.
+        // Start runs after SlotMachine.Awake, so the wallet already exists when we subscribe.
         private void Start()
         {
             spinButton.onClick.AddListener(machine.TrySpin);
